@@ -1,51 +1,37 @@
-import { Box, Button, Modal, TextField } from '@mui/material';
-import { FormEvent, useContext, useEffect, useState } from 'react';
+import { Box, Button, Modal, TextField, Typography } from '@mui/material';
+import { FormEvent, useContext,useState } from 'react';
 import '../styles.css';
 import { initialState, UserContext } from "../User"
 import LoginIcon from '@mui/icons-material/Login';
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { useNavigate } from 'react-router-dom';
+import {  useNavigate } from 'react-router-dom';
+import { login, register } from '../useAPI';
+import UserProfile from './UserProfile';
 
 const Login = () => {
 
+    const [isSignUp, setIsSignUp] = useState(true);
+
     const { user, userDispatch } = useContext(UserContext);
+
 
     const [showPassword, setShowPassword] = useState(false);
 
     const navigate = useNavigate()
 
-    const [open, setOpen] = useState(user == initialState ? false : true);
+    const [open, setOpen] = useState(false);
 
-const initialValue = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    password: '',
-    address: '',
-    phoneNumber: ''
-}
+    const [formData, setFormData] = useState(initialState);
 
-    const [formData, setFormData] = useState(initialValue);
-
-    useEffect(() => {
-
-        if (user !== initialState) {
-            setFormData({
-                firstName: user.firstName || '',
-                lastName: user.lastName || '',
-                email: user.email || '',
-                address: user.address || '',
-                phoneNumber: user.phoneNumber || '',
-                password: ''
-            });
-        }
-    }, [user]);
-    const handleOpen = () => setOpen(true);
+    const handleOpen = (isSignUp: boolean) => {
+        setIsSignUp(isSignUp);
+        setOpen(true);
+    }
     const handleClose = () => {
         if (user !== initialState) {
             navigate('/home');
         }
-        setFormData(initialValue);
+        setFormData(initialState);
         setOpen(false);
     }
     const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -54,14 +40,31 @@ const initialValue = {
         event.preventDefault();
     }
 
-
-    const handleSubmit = (event: FormEvent) => {
+    const handleSignUp = async (event: FormEvent) => {
         event.preventDefault();
-        userDispatch({
-            type: 'ADD_USER',
-            data: formData
-        })
-        navigate('home');
+        try {
+            const result = await register(formData);
+            if (result) {
+
+                userDispatch({ type: 'REGISTER', data: formData });
+            }
+        } catch (error) {
+            console.error('Registration failed', error);
+        }
+
+        handleClose();
+    };
+
+    const handleSignIn = async (event: FormEvent) => {
+        event.preventDefault();
+        try {
+            const result = await login(formData); 
+            if (result) {
+                userDispatch({ type: 'LOGIN', data: formData }); 
+            }
+        } catch (error) {
+            console.error('Login failed', error);
+        }
         handleClose();
     };
 
@@ -75,10 +78,16 @@ const initialValue = {
 
     return (
         <>
-            {user === initialState && <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center', position: 'absolute', top: 0, left: 0, padding: 2 }}>
 
-                <Button variant="outlined" onClick={handleOpen} endIcon={<LoginIcon />}>
-                    Login
+            {user != initialState && <h1>a</h1> && <UserProfile />}
+            {/* sx={{ display: 'flex', alignItems: 'center', textAlign: 'center', position: 'absolute', top: 0, left: 0, padding: 2 }} */}
+            {user == initialState && <Box >
+
+                <Button className='button outlined' sx={{ textTransform: 'none' }} onClick={() => handleOpen(false)} endIcon={<LoginIcon />}>
+                    Sign In
+                </Button>
+                <Button className='button outlined' sx={{ textTransform: 'none' }} onClick={() => handleOpen(true)} endIcon={<LoginIcon />}>
+                    Sign Up
                 </Button>
             </Box>}
 
@@ -90,28 +99,14 @@ const initialValue = {
                 aria-describedby="modal-description"
             >
                 <Box className='box'>
-                    <h2 id="modal-title">Sign In</h2>
-                    <form onSubmit={handleSubmit}>
-                        <TextField
-                            name='firstName'
-                            label="First Name"
-                            variant="outlined"
-                            fullWidth
-                            required
-                            margin="normal"
-                            value={formData.firstName}
-                            onChange={handleChange}
-                        />
-                        <TextField
-                            name='lastName'
-                            label="Last Name"
-                            variant="outlined"
-                            fullWidth
-                            margin="normal"
-                            value={formData.lastName}
-                            onChange={handleChange}
-
-                        />
+                    <Typography id="modal-title" variant="h6" component="h2">
+                        {isSignUp ? 'Sign Up' : 'Sign In'}
+                    </Typography>
+                    {isSignUp ? 'Already have an account?' : 'Dont an account?'}
+                    <Button onClick={() => setIsSignUp(!isSignUp)} sx={{ textTransform: 'none' }}>
+                       {isSignUp ? 'Sign In' : 'sign Up'}
+                    </Button>
+                    <form onSubmit={isSignUp ? handleSignUp : handleSignIn}>
                         <TextField
                             name='email'
                             label="Email"
@@ -121,27 +116,6 @@ const initialValue = {
                             type="email"
                             margin="normal"
                             value={formData.email}
-                            onChange={handleChange}
-
-                        />
-                        <TextField
-                            name='address'
-                            label="Address"
-                            variant="outlined"
-                            fullWidth
-                            margin="normal"
-                            value={formData.address}
-                            onChange={handleChange}
-
-                        />
-                        <TextField
-                            name='phoneNumber'
-                            label="Phone Number"
-                            variant="outlined"
-                            fullWidth
-                            required
-                            margin="normal"
-                            value={formData.phoneNumber}
                             onChange={handleChange}
 
                         />
@@ -166,17 +140,16 @@ const initialValue = {
                                 )
                             }}
                             type={showPassword ? "text" : "password"}
-
-
-
                         />
-                        <Button type="submit" variant="contained" color="primary">
-                            Submit
-                        </Button>
-                        <Button onClick={handleClose} variant="outlined" color="primary">
+                        <Button onClick={handleClose} variant="outlined" color="primary" sx={{ textTransform: 'none' }}>
                             Close
                         </Button>
+                        <Button type="submit" variant="contained" sx={{ textTransform: 'none' }}>
+                            {isSignUp ? 'Sign Up' : 'Sign In'}
+                        </Button>
                     </form>
+
+
                 </Box>
             </Modal>
         </>
