@@ -1,10 +1,10 @@
 import { Box, Button, Modal, TextField, Typography } from '@mui/material';
-import { FormEvent, useContext,useState } from 'react';
+import { FormEvent, useContext, useState } from 'react';
 import '../styles.css';
 import { initialState, UserContext } from "../User"
 import LoginIcon from '@mui/icons-material/Login';
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import {  useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { login, register } from '../useAPI';
 import UserProfile from './UserProfile';
 
@@ -46,7 +46,7 @@ const Login = () => {
             const result = await register(formData);
             if (result) {
 
-                userDispatch({ type: 'REGISTER', data: formData });
+                userDispatch({ type: 'REGISTER', data: {...formData,id:result.userId} });
             }
         } catch (error) {
             console.error('Registration failed', error);
@@ -58,9 +58,9 @@ const Login = () => {
     const handleSignIn = async (event: FormEvent) => {
         event.preventDefault();
         try {
-            const result = await login(formData); 
+            const result = await login(formData);
             if (result) {
-                userDispatch({ type: 'LOGIN', data: formData }); 
+                userDispatch({ type: 'LOGIN', data: result.user });
             }
         } catch (error) {
             console.error('Login failed', error);
@@ -102,10 +102,7 @@ const Login = () => {
                     <Typography id="modal-title" variant="h6" component="h2">
                         {isSignUp ? 'Sign Up' : 'Sign In'}
                     </Typography>
-                    {isSignUp ? 'Already have an account?' : 'Dont an account?'}
-                    <Button onClick={() => setIsSignUp(!isSignUp)} sx={{ textTransform: 'none' }}>
-                       {isSignUp ? 'Sign In' : 'sign Up'}
-                    </Button>
+
                     <form onSubmit={isSignUp ? handleSignUp : handleSignIn}>
                         <TextField
                             name='email'
@@ -141,12 +138,19 @@ const Login = () => {
                             }}
                             type={showPassword ? "text" : "password"}
                         />
+                        <Typography>
+                            {isSignUp ? 'Already have an account?' : 'Dont an account?'}
+                            <Button onClick={() => setIsSignUp(!isSignUp)} sx={{ textTransform: 'none' }}>
+                                {isSignUp ? 'Sign in' : 'sign up'}
+                            </Button>
+                        </Typography>
                         <Button onClick={handleClose} variant="outlined" color="primary" sx={{ textTransform: 'none' }}>
                             Close
                         </Button>
                         <Button type="submit" variant="contained" sx={{ textTransform: 'none' }}>
                             {isSignUp ? 'Sign Up' : 'Sign In'}
                         </Button>
+
                     </form>
 
 

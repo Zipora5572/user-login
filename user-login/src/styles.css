@@ -23,7 +23,7 @@
 }
 
 .button.outlined {
-    border: 2px solid white; /* Border for outlined buttons */
+    border: 0.2px solid white;
     background-color: transparent; /* Transparent background */
     color: white; /* Text color for outlined button */
 }

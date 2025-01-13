@@ -44,7 +44,7 @@ const EditProfile = () => {
         }
     }, [user]);
 
-    const handleOpen = () => setOpen(true);
+    
     const handleClose = () => {
         if (user !== initialState) {
             navigate('/home');
@@ -62,9 +62,9 @@ const EditProfile = () => {
     const handleSubmit = async(event: FormEvent) => {
         event.preventDefault();
         try {
-            const result = await update(formData); // Call the async function
+            const result = await update({...user,...formData}); 
             if (result) {
-                userDispatch({ type: 'UPDATE', data: formData }); // Dispatch action with result
+                userDispatch({ type: 'UPDATE', data: {...formData,id:user.id} }); 
             }
         } catch (error) {
             console.error('Update failed', error);

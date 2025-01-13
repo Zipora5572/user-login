@@ -15,7 +15,7 @@ type PartialWithRequiredFields<T, K extends keyof T> = Partial<T> & Pick<T, K>;
 
 type Action = {
     type: 'REGISTER',
-    data: Omit<UserType, 'id'>
+    data: Partial<UserType>
 } | {
     type: 'LOGIN'
     data: Partial<UserType>

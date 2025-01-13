@@ -79,9 +79,14 @@ const AppNavBar=()=> {
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
               {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
-                  <Typography sx={{ textAlign: 'center' }}>{page}</Typography>
-                </MenuItem>
+                              <Button
+                              key={page}
+                              component={Link} to={`/${page}`}
+                              onClick={handleCloseNavMenu}
+                              sx={{ my: 2, display: 'block' }}
+                            >
+                              {page}
+                            </Button>
               ))}
             </Menu>
           </Box>
